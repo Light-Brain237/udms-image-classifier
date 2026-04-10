@@ -1,0 +1,12 @@
+# UDMS Image Classifier
+data/raw/
+*.h5
+*.tflite
+*.onnx
+.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+references/
+venv/
+.venv/

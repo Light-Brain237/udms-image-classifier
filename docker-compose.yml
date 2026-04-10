@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  classifier:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_PATH=/app/models/classifier.tflite
+      - LABEL_MAP_PATH=/app/models/label_map.json
+      - CONFIDENCE_THRESHOLD=0.6
+    volumes:
+      - ./models:/app/models
+
