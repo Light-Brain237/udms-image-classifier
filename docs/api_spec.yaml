@@ -1,0 +1,120 @@
+openapi: "3.0.3"
+info:
+  title: UDMS Image Classifier API
+  description: Classifies citizen-submitted images of urban disorder into 7 categories
+  version: "1.0.0"
+paths:
+  /api/v1/classify:
+    post:
+      summary: Classify an image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClassifyResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /model/info:
+    get:
+      summary: Model metadata
+      responses:
+        "200":
+          description: Model information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelInfoResponse"
+components:
+  schemas:
+    PredictionResult:
+      type: object
+      properties:
+        category:
+          type: string
+        category_label:
+          type: string
+        confidence:
+          type: number
+          format: float
+        requires_review:
+          type: boolean
+    AlternativeResult:
+      type: object
+      properties:
+        category:
+          type: string
+        confidence:
+          type: number
+          format: float
+    ClassifyResponse:
+      type: object
+      properties:
+        prediction:
+          $ref: "#/components/schemas/PredictionResult"
+        alternatives:
+          type: array
+          items:
+            $ref: "#/components/schemas/AlternativeResult"
+        model_version:
+          type: string
+        inference_time_ms:
+          type: number
+          format: float
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        model_loaded:
+          type: boolean
+        model_version:
+          type: string
+    ModelInfoResponse:
+      type: object
+      properties:
+        version:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        input_shape:
+          type: array
+          items:
+            type: integer
+        model_size_mb:
+          type: number
+          format: float
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        detail:
+          type: string

@@ -1,7 +1,7 @@
 """
 UDMS Split Dataset — Split cleaned images into train/val/test (70/15/15).
 
-Input:  data/raw/cleaned/<category>/ (flat image folders)
+Input:  data/processed/all/<category>/ (flat image folders from clean_dataset.py)
 Output: data/processed/train/<category>/, val/<category>/, test/<category>/
 
 CRITICAL: Uses stratified split to maintain class proportions.
@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 from src.data.category_mapping import UDMS_CATEGORIES
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
-CLEANED_DIR = PROJECT_ROOT / "data" / "raw" / "cleaned"
+SOURCE_DIR = PROJECT_ROOT / "data" / "processed" / "all"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "processed"
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
@@ -28,15 +28,41 @@ TEST_RATIO = 0.15
 RANDOM_STATE = 42
 
 
-def split_dataset(cleaned_dir: Path = CLEANED_DIR, output_dir: Path = OUTPUT_DIR) -> dict:
+def clear_split_dirs(output_dir: Path = OUTPUT_DIR) -> None:
+    """Remove and recreate train/val/test category folders.
+
+    This prevents data leakage from stale images left over by previous runs.
+    Only the train/, val/, test/ subdirectories are cleared — the all/ source
+    directory is never touched.
+    """
+    for split_name in ["train", "val", "test"]:
+        split_dir = output_dir / split_name
+        if split_dir.exists():
+            shutil.rmtree(split_dir)
+        for cat in UDMS_CATEGORIES:
+            (split_dir / cat).mkdir(parents=True, exist_ok=True)
+    print("  Cleared existing train/val/test folders.")
+
+
+def split_dataset(source_dir: Path = SOURCE_DIR, output_dir: Path = OUTPUT_DIR) -> dict:
     """Split each category 70/15/15 into train/val/test.
+
+    Reads images from data/processed/all/<category>/ and copies them
+    into data/processed/train/, val/, test/ subdirectories.
+    Uses scikit-learn train_test_split with random_state=42.
+    Images are copied (not moved) to preserve originals.
+
+    IMPORTANT: Clears existing train/val/test folders first to prevent
+    data leakage from stale images left by previous runs.
 
     Returns: {category: {train: N, val: N, test: N}}
     """
+    clear_split_dirs(output_dir)
+
     results = {}
 
     for cat in UDMS_CATEGORIES:
-        cat_dir = cleaned_dir / cat
+        cat_dir = source_dir / cat
         if not cat_dir.exists():
             print(f"  [SKIP] {cat} — folder not found")
             results[cat] = {"train": 0, "val": 0, "test": 0}
@@ -108,6 +134,8 @@ def verify_split(output_dir: Path = OUTPUT_DIR) -> bool:
 
     if all_ok:
         print("  All checks passed — no data leakage detected.")
+    else:
+        raise RuntimeError("Data leakage detected! See messages above.")
     return all_ok
 
 
@@ -116,7 +144,7 @@ def main():
     print("UDMS Dataset Splitter (70/15/15)")
     print("=" * 60)
 
-    print(f"\nSource: {CLEANED_DIR}")
+    print(f"\nSource: {SOURCE_DIR}")
     print(f"Output: {OUTPUT_DIR}\n")
 
     results = split_dataset()
