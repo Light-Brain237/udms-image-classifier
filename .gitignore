@@ -1,5 +1,12 @@
 # UDMS Image Classifier
 data/raw/
+data/processed/
+data/raw/cleaned/
+*.jpg
+*.jpeg
+*.png
+data/sample_grid.png
+data/class_distribution.png
 *.h5
 *.tflite
 *.onnx
