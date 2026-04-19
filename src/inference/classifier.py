@@ -6,11 +6,18 @@ Uses src.data.preprocessing (no duplicate preprocessing module).
 """
 
 import json
+import logging
 import time
 from pathlib import Path
 
 import numpy as np
-import tensorflow as tf
+
+logger = logging.getLogger(__name__)
+
+try:
+    from ai_edge_litert.interpreter import Interpreter
+except ImportError:
+    from tensorflow.lite.python.interpreter import Interpreter
 
 from src.data.preprocessing import preprocess_bytes, add_batch_dimension
 from src.data.category_mapping import CATEGORY_LABELS
@@ -32,7 +39,10 @@ class UDMSClassifier:
             label_map_path: Path to ``label_map.json``.
             confidence_threshold: Below this confidence → ``requires_review``.
         """
-        self._interpreter = tf.lite.Interpreter(model_path=model_path)
+        self._interpreter = Interpreter(
+            model_path=model_path,
+            experimental_default_delegate_latest_features=True,
+        )
         self._interpreter.allocate_tensors()
         self._input_details = self._interpreter.get_input_details()
         self._output_details = self._interpreter.get_output_details()
@@ -59,20 +69,20 @@ class UDMSClassifier:
                 "inference_time_ms": float,
             }
         """
-        start = time.perf_counter()
-
         processed = preprocess_bytes(image_bytes)
         input_data = add_batch_dimension(processed)
 
         self._interpreter.set_tensor(
             self._input_details[0]["index"], input_data
         )
+
+        start = time.perf_counter()
         self._interpreter.invoke()
+        elapsed_ms = (time.perf_counter() - start) * 1000.0
+
         probs = self._interpreter.get_tensor(
             self._output_details[0]["index"]
         )[0]
-
-        elapsed_ms = (time.perf_counter() - start) * 1000.0
 
         top_idx = int(np.argmax(probs))
         confidence = float(probs[top_idx])
