@@ -1,22 +1,73 @@
-openapi: "3.0.3"
+openapi: 3.0.3
 info:
   title: UDMS Image Classifier API
-  description: Classifies citizen-submitted images of urban disorder into 7 categories
-  version: "1.0.0"
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
 paths:
+  /:
+    get:
+      summary: Welcome message
+      operationId: getWelcome
+      responses:
+        "200":
+          description: Welcome response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - version
+                properties:
+                  message:
+                    type: string
+                  version:
+                    type: string
+
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      responses:
+        "200":
+          description: Health status response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - model_loaded
+                  - model_version
+                properties:
+                  status:
+                    type: string
+                  model_loaded:
+                    type: boolean
+                  model_version:
+                    type: string
+
   /api/v1/classify:
     post:
-      summary: Classify an image
+      summary: Classify urban disorder image
+      operationId: classifyImage
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
               type: object
+              required:
+                - file
               properties:
-                image:
+                file:
                   type: string
                   format: binary
+                  description: Image file to classify. Maximum size is 10MB.
+            encoding:
+              file:
+                contentType: image/jpeg, image/png, image/webp
       responses:
         "200":
           description: Classification result
@@ -25,35 +76,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/ClassifyResponse"
         "400":
-          description: Invalid input
+          description: Bad request (invalid file type or file too large)
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /health:
-    get:
-      summary: Health check
-      responses:
-        "200":
-          description: Service is healthy
+        "500":
+          description: Internal server error during model inference
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HealthResponse"
-  /model/info:
-    get:
-      summary: Model metadata
-      responses:
-        "200":
-          description: Model information
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelInfoResponse"
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     PredictionResult:
       type: object
+      required:
+        - category
+        - category_label
+        - confidence
+        - requires_review
       properties:
         category:
           type: string
@@ -62,18 +105,30 @@ components:
         confidence:
           type: number
           format: float
+          minimum: 0.0
+          maximum: 1.0
         requires_review:
           type: boolean
+
     AlternativeResult:
       type: object
+      required:
+        - category
+        - confidence
       properties:
         category:
           type: string
         confidence:
           type: number
           format: float
+
     ClassifyResponse:
       type: object
+      required:
+        - prediction
+        - alternatives
+        - model_version
+        - inference_time_ms
       properties:
         prediction:
           $ref: "#/components/schemas/PredictionResult"
@@ -86,33 +141,12 @@ components:
         inference_time_ms:
           type: number
           format: float
-    HealthResponse:
-      type: object
-      properties:
-        status:
-          type: string
-        model_loaded:
-          type: boolean
-        model_version:
-          type: string
-    ModelInfoResponse:
-      type: object
-      properties:
-        version:
-          type: string
-        categories:
-          type: array
-          items:
-            type: string
-        input_shape:
-          type: array
-          items:
-            type: integer
-        model_size_mb:
-          type: number
-          format: float
+
     ErrorResponse:
       type: object
+      required:
+        - error
+        - detail
       properties:
         error:
           type: string
