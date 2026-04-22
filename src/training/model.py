@@ -3,14 +3,19 @@ UDMS Model Architecture — MobileNetV2 transfer learning.
 
 Architecture:
   MobileNetV2 (ImageNet weights, include_top=False)
+  → mobilenetv2_preprocess (Lambda: scales [0,255] → [-1,1])
   → GlobalAveragePooling2D
   → Dropout(0.3)
   → Dense(128, activation='relu')
   → Dropout(0.2)
   → Dense(7, activation='softmax')
 
-Input shape: (224, 224, 3)
+Input shape: (224, 224, 3) — raw float32 pixels in [0, 255]
 Output shape: (7,) — probability distribution over 7 categories
+
+The preprocessing Lambda layer is exported into the TFLite artifact, so callers
+never need to apply mobilenet_v2.preprocess_input themselves.  Training and
+inference both supply raw [0, 255] values — no train/serve skew is possible.
 """
 
 import tensorflow as tf
@@ -43,7 +48,11 @@ def build_model(
     base_model.trainable = not freeze_backbone
 
     inputs = tf.keras.Input(shape=INPUT_SHAPE)
-    x = base_model(inputs, training=False)
+    x = tf.keras.layers.Lambda(
+        tf.keras.applications.mobilenet_v2.preprocess_input,
+        name="mobilenetv2_preprocess",
+    )(inputs)
+    x = base_model(x, training=False)
     x = tf.keras.layers.GlobalAveragePooling2D()(x)
     x = tf.keras.layers.Dropout(DROPOUT_1)(x)
     x = tf.keras.layers.Dense(DENSE_UNITS, activation="relu")(x)

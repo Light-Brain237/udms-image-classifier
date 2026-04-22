@@ -16,6 +16,10 @@ COPY models/ ./models/
 
 EXPOSE 8000
 
+ENV MODEL_PATH=/app/models/classifier.tflite
+ENV LABEL_MAP_PATH=/app/models/label_map.json
+ENV CONFIDENCE_THRESHOLD=0.6
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 
