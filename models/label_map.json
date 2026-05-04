@@ -1,7 +1,7 @@
 {
   "0": {
-    "category": "broken_lighting",
-    "label": "Broken / Missing Street Lighting"
+    "category": "bad_drainage",
+    "label": "Bad Drainage / Water Sewage Issues"
   },
   "1": {
     "category": "damaged_signage",
@@ -12,19 +12,11 @@
     "label": "Illegal Dumping / Garbage"
   },
   "3": {
-    "category": "other",
-    "label": "Other / Unclassified"
-  },
-  "4": {
-    "category": "pothole_road",
+    "category": "potholes",
     "label": "Pothole / Road Damage"
   },
-  "5": {
-    "category": "vegetation",
+  "4": {
+    "category": "vegetation_overgrowth",
     "label": "Vegetation Overgrowth"
-  },
-  "6": {
-    "category": "water_sewage",
-    "label": "Water / Sewage Issues"
   }
 }

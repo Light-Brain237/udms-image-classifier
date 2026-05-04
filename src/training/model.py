@@ -8,10 +8,10 @@ Architecture:
   → Dropout(0.3)
   → Dense(128, activation='relu')
   → Dropout(0.2)
-  → Dense(7, activation='softmax')
+  → Dense(5, activation='softmax')
 
 Input shape: (224, 224, 3) — raw float32 pixels in [0, 255]
-Output shape: (7,) — probability distribution over 7 categories
+Output shape: (5,) — probability distribution over 5 categories
 
 The preprocessing Lambda layer is exported into the TFLite artifact, so callers
 never need to apply mobilenet_v2.preprocess_input themselves.  Training and

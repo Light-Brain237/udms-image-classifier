@@ -29,28 +29,51 @@ PHASE1_EPOCHS = 20
 PHASE2_LR = 1e-5
 PHASE2_EPOCHS = 15
 IMG_SIZE = (224, 224)
+TEMP_SPLIT = 0.30   # val + test together = 30%;  train = 70%
+SEED = 42
+DATA_DIR = "data/processed/all"
 
 
 def load_data(
-    data_dir: str, split: str = "train", batch_size: int = BATCH_SIZE
-) -> tf.data.Dataset:
-    """Load image dataset from directory structure.
+    data_dir: str = DATA_DIR,
+    batch_size: int = BATCH_SIZE,
+) -> "tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]":
+    """Return (train_ds, val_ds, test_ds) with a 70 / 15 / 15 split.
+
+    Strategy:
+      1. ``validation_split=0.30, subset='training'``  → 70 % train
+      2. ``validation_split=0.30, subset='validation'`` → 30 % temp
+      3. temp split 50 / 50  → 15 % val  +  15 % test
 
     Args:
-        data_dir: Root of processed data (e.g. ``data/processed``).
-        split: One of ``train``, ``val``, ``test``.
+        data_dir: Flat directory with one subfolder per class.
         batch_size: Batch size.
 
     Returns:
-        tf.data.Dataset yielding (image_batch, label_batch).
+        Tuple of (train_ds, val_ds, test_ds).
     """
-    return tf.keras.utils.image_dataset_from_directory(
-        f"{data_dir}/{split}",
+    common = dict(
         image_size=IMG_SIZE,
-        batch_size=batch_size,
+        batch_size=None,
         label_mode="categorical",
-        shuffle=(split == "train"),
+        seed=SEED,
+        validation_split=TEMP_SPLIT,
     )
+    train_ds = (
+        tf.keras.utils.image_dataset_from_directory(
+            data_dir, subset="training", **common
+        )
+        .batch(batch_size)
+        .prefetch(tf.data.AUTOTUNE)
+    )
+    temp_ds = tf.keras.utils.image_dataset_from_directory(
+        data_dir, subset="validation", **common
+    )
+    n_temp = sum(1 for _ in temp_ds)
+    n_val = n_temp // 2
+    val_ds = temp_ds.take(n_val).batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    test_ds = temp_ds.skip(n_val).batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    return train_ds, val_ds, test_ds
 
 
 def train_phase1(
@@ -104,10 +127,9 @@ def train_phase2(
     return history
 
 
-def train_full_pipeline(data_dir: str = "data/processed") -> tf.keras.Model:
+def train_full_pipeline(data_dir: str = DATA_DIR) -> tf.keras.Model:
     """Orchestrate: build_model → Phase 1 → unfreeze → Phase 2 → return model."""
-    train_ds = load_data(data_dir, "train")
-    val_ds = load_data(data_dir, "val")
+    train_ds, val_ds, test_ds = load_data(data_dir)
 
     model = build_model(freeze_backbone=True)
 

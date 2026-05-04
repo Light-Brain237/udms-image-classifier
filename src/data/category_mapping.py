@@ -6,26 +6,22 @@ NEVER hardcode category mappings elsewhere — always import from here.
 """
 
 UDMS_CATEGORIES = [
-    "illegal_dumping",
-    "pothole_road",
-    "broken_lighting",
-    "water_sewage",
+    "bad_drainage",
     "damaged_signage",
-    "vegetation",
-    "other"
+    "illegal_dumping",
+    "potholes",
+    "vegetation_overgrowth",
 ]
 
 CATEGORY_LABELS = {
-    "illegal_dumping": "Illegal Dumping / Garbage",
-    "pothole_road": "Pothole / Road Damage",
-    "broken_lighting": "Broken / Missing Street Lighting",
-    "water_sewage": "Water / Sewage Issues",
+    "bad_drainage": "Bad Drainage / Water Sewage Issues",
     "damaged_signage": "Damaged Signage / Infrastructure",
-    "vegetation": "Vegetation Overgrowth",
-    "other": "Other / Unclassified"
+    "illegal_dumping": "Illegal Dumping / Garbage",
+    "potholes": "Pothole / Road Damage",
+    "vegetation_overgrowth": "Vegetation Overgrowth",
 }
 
-NUM_CLASSES = 7
+NUM_CLASSES = 5
 
 # Source → UDMS mapping. None means discard.
 ROAD_ISSUES_HF_MAP = {
