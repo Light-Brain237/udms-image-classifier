@@ -7,11 +7,11 @@ verified images organised by category.
 
 Usage examples
 --------------
-# Scrape all 7 categories (base queries)
+# Scrape all 5 categories (base queries)
 python -m src.data.smart_scraper
 
 # Scrape specific categories only
-python -m src.data.smart_scraper --categories pothole_road vegetation
+python -m src.data.smart_scraper --categories potholes vegetation_overgrowth
 
 # Second run — different search terms avoid re-downloading the same pages
 python -m src.data.smart_scraper --variation 1
@@ -60,7 +60,7 @@ IMG_SIZE = (224, 224)          # MobileNetV2 input resolution
 # Reject prompts are shared and filter obvious non-urban-disorder content.
 # An image passes if its top-scoring CLIP prompt is one of the keep prompts.
 CLIP_KEEP_PROMPTS: dict[str, list[str]] = {
-    "pothole_road": [
+    "potholes": [
         "a pothole on a road",
         "a damaged road surface with holes",
         "cracked asphalt pavement",
@@ -72,13 +72,7 @@ CLIP_KEEP_PROMPTS: dict[str, list[str]] = {
         "rubbish dumped on an urban road",
         "garbage scattered on a city street",
     ],
-    "broken_lighting": [
-        "a broken or damaged street lamp",
-        "a cracked or missing street light",
-        "a damaged lamp post on a road",
-        "broken outdoor lighting on a street",
-    ],
-    "water_sewage": [
+    "bad_drainage": [
         "an open or broken manhole cover on a road",
         "sewage overflow flooding a street",
         "a burst water pipe on a road",
@@ -90,16 +84,11 @@ CLIP_KEEP_PROMPTS: dict[str, list[str]] = {
         "a fallen or bent street sign",
         "a missing or illegible road sign",
     ],
-    "vegetation": [
+    "vegetation_overgrowth": [
         "overgrown vegetation blocking a sidewalk",
         "trees or bushes encroaching on a road",
         "overgrown weeds on an urban pavement",
         "plants blocking road infrastructure",
-    ],
-    "other": [
-        "a general urban infrastructure problem",
-        "a city maintenance issue on a street",
-        "an unspecified urban disorder",
     ],
 }
 
@@ -123,19 +112,13 @@ BASE_QUERIES: dict[str, list[str]] = {
         "waste dumping urban Africa",
         "rubbish pile sidewalk Nigeria",
     ],
-    "pothole_road": [
+    "potholes": [
         "pothole road Lagos Nigeria",
         "damaged road surface Africa",
         "road cracks potholes Nigeria",
         "broken road infrastructure Africa",
     ],
-    "broken_lighting": [
-        "broken streetlight Lagos Nigeria",
-        "damaged street lamp Africa",
-        "faulty street light Ghana",
-        "broken lamp post urban Nigeria",
-    ],
-    "water_sewage": [
+    "bad_drainage": [
         "open manhole cover Lagos",
         "sewage overflow street Africa",
         "burst pipe road Nigeria",
@@ -147,16 +130,11 @@ BASE_QUERIES: dict[str, list[str]] = {
         "vandalised road sign Lagos",
         "damaged guardrail road Africa",
     ],
-    "vegetation": [
+    "vegetation_overgrowth": [
         "overgrown sidewalk Lagos Nigeria",
         "tree blocking road sign Africa",
         "bush overgrown pavement Nigeria",
         "vegetation blocking road Africa",
-    ],
-    "other": [
-        "urban disorder Africa",
-        "city infrastructure problem Nigeria",
-        "municipal complaint urban Africa",
     ],
 }
 

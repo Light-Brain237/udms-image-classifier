@@ -17,7 +17,7 @@ from PIL import Image
 def mock_tflite_model(tmp_path):
     """Create a minimal valid TFLite model for testing.
 
-    This model outputs random 7-class probabilities.
+    This model outputs random 5-class probabilities.
     It validates that the classifier wrapper works correctly
     WITHOUT needing a trained model.
     """
@@ -25,7 +25,7 @@ def mock_tflite_model(tmp_path):
 
     inputs = tf.keras.Input(shape=(224, 224, 3))
     x = tf.keras.layers.GlobalAveragePooling2D()(inputs)
-    outputs = tf.keras.layers.Dense(7, activation="softmax")(x)
+    outputs = tf.keras.layers.Dense(5, activation="softmax")(x)
     model = tf.keras.Model(inputs, outputs)
 
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
@@ -42,8 +42,8 @@ def mock_label_map(tmp_path):
     label_map = {
         str(i): {"category": cat, "label": f"Test {cat}"}
         for i, cat in enumerate([
-            "illegal_dumping", "pothole_road", "broken_lighting",
-            "water_sewage", "damaged_signage", "vegetation", "other",
+            "bad_drainage", "damaged_signage", "illegal_dumping",
+            "potholes", "vegetation_overgrowth",
         ])
     }
     path = tmp_path / "label_map.json"

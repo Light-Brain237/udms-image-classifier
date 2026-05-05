@@ -14,10 +14,10 @@ UDMS_CATEGORIES = [
 ]
 
 CATEGORY_LABELS = {
-    "bad_drainage": "Bad Drainage / Water Sewage Issues",
+    "bad_drainage": "Bad Drainage / Water Issues",
     "damaged_signage": "Damaged Signage / Infrastructure",
     "illegal_dumping": "Illegal Dumping / Garbage",
-    "potholes": "Pothole / Road Damage",
+    "potholes": "Potholes / Road Damage",
     "vegetation_overgrowth": "Vegetation Overgrowth",
 }
 
@@ -26,26 +26,26 @@ NUM_CLASSES = 5
 # Source → UDMS mapping. None means discard.
 ROAD_ISSUES_HF_MAP = {
     "Littering/Garbage": "illegal_dumping",
-    "Damaged Road Issues": "pothole_road",
-    "Pothole Issues": "pothole_road",
+    "Damaged Road Issues": "potholes",
+    "Pothole Issues": "potholes",
     "Broken Road Sign Issues": "damaged_signage",
-    "Mixed Issues": "other",
-    "Vandalism/Graffiti": "other",
-    "Illegal Parking": None  # discard
+    "Mixed Issues": None,       # discard — no 'other' category
+    "Vandalism/Graffiti": None, # discard
+    "Illegal Parking": None     # discard
 }
 
 URBAN_VISUAL_POLLUTION_MAP = {
     "GARBAGE": "illegal_dumping",
-    "POTHOLES": "pothole_road",
-    "POTHOLE": "pothole_road",
-    "CONSTRUCTION_ROAD": "pothole_road",
-    "ROAD_CONSTRUCTION": "pothole_road",
-    "BAD_STREETLIGHT": "broken_lighting",
+    "POTHOLES": "potholes",
+    "POTHOLE": "potholes",
+    "CONSTRUCTION_ROAD": "potholes",
+    "ROAD_CONSTRUCTION": "potholes",
+    "BAD_STREETLIGHT": None,    # discard — broken_lighting removed
     "BROKEN_SIGNAGE": "damaged_signage",
     "FADED_SIGNAGE": "damaged_signage",
-    "CLUTTER_SIDEWALK": "other",
-    "CLUTTERED_SIDEWALK": "other",
-    "GRAFFITI": "other",
+    "CLUTTER_SIDEWALK": None,   # discard
+    "CLUTTERED_SIDEWALK": None, # discard
+    "GRAFFITI": None,           # discard
     "BAD_BILLBOARD": None,
     "SAND_ON_ROAD": None,
     "SAND_ON_ROADS": None,
@@ -53,23 +53,23 @@ URBAN_VISUAL_POLLUTION_MAP = {
 }
 
 ROAD_HAZARDS_MAP = {
-    "pothole": "pothole_road",
-    "crack": "pothole_road",
-    "cracks": "pothole_road",
-    "open_manhole": "water_sewage",
+    "pothole": "potholes",
+    "crack": "potholes",
+    "cracks": "potholes",
+    "open_manhole": "bad_drainage",
     "good_road": None  # negative sample, discard
 }
 
 CIVIC_ISSUES_MAP = {
-    "pothole": "pothole_road",
+    "pothole": "potholes",
     "garbage": "illegal_dumping",
     "plain_road": None,  # negative sample, discard
-    "non_garbage": None   # negative sample, discard
+    "non_garbage": None  # negative sample, discard
 }
 
 FLOOD_CLASSIFICATION_MAP = {
-    "flooded": "water_sewage",
-    "Flooded": "water_sewage",
+    "flooded": "bad_drainage",
+    "Flooded": "bad_drainage",
     "non_flooded": None,  # discard
     "Non Flooded": None,
     "non-flooded": None,

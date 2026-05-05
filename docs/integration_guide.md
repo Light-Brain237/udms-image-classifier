@@ -62,8 +62,8 @@ The full success response JSON:
 ```json
 {
 	"prediction": {
-		"category": "pothole_road",
-		"category_label": "Pothole / Road Damage",
+		"category": "potholes",
+		"category_label": "Potholes / Road Damage",
 		"confidence": 0.8742,
 		"requires_review": false
 	},
@@ -73,7 +73,7 @@ The full success response JSON:
 			"confidence": 0.0821
 		},
 		{
-			"category": "other",
+			"category": "bad_drainage",
 			"confidence": 0.0264
 		},
 		{

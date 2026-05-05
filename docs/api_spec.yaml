@@ -100,6 +100,12 @@ components:
       properties:
         category:
           type: string
+          enum:
+            - bad_drainage
+            - damaged_signage
+            - illegal_dumping
+            - potholes
+            - vegetation_overgrowth
         category_label:
           type: string
         confidence:
@@ -118,6 +124,12 @@ components:
       properties:
         category:
           type: string
+          enum:
+            - bad_drainage
+            - damaged_signage
+            - illegal_dumping
+            - potholes
+            - vegetation_overgrowth
         confidence:
           type: number
           format: float

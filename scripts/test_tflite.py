@@ -39,4 +39,4 @@ with open('models/label_map.json') as f:
 
 print(f"\n✅ Label map loaded: {len(label_map)} categories")
 for k, v in label_map.items():
-    print(f"   {k}: {v['label']}")
+    print(f"   {k}: {v.get('label', v.get('category', k))}")
