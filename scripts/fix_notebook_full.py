@@ -1,0 +1,157 @@
+"""Fix all stale cells in colab_train.ipynb for flat 5-class structure."""
+import json
+
+with open('notebooks/colab_train.ipynb', 'r', encoding='utf-8') as f:
+    nb = json.load(f)
+cells = nb['cells']
+
+# ── Cell 1: Drive mount description ──────────────────────────────────────────
+cells[1]['source'] = (
+    "---\n"
+    "## 1 · Mount Google Drive\n\n"
+    "Your dataset must already be at:\n"
+    "```\n"
+    "MyDrive/udms-project/data/processed/all/\n"
+    "  bad_drainage/\n"
+    "  damaged_signage/\n"
+    "  illegal_dumping/\n"
+    "  potholes/\n"
+    "  vegetation_overgrowth/\n"
+    "```\n"
+    "Trained models will be saved to `MyDrive/udms-project/models/` automatically.\n"
+).splitlines(keepends=True)
+
+# ── Cell 5: flat dataset checker ─────────────────────────────────────────────
+cells[5]['source'] = (
+    "# Verify the flat dataset directory exists on Drive\n"
+    "import os\n\n"
+    "def check_flat_dataset(data_dir):\n"
+    "    if not os.path.isdir(data_dir):\n"
+    "        print(f'NOT FOUND: {data_dir}')\n"
+    "        print('Top-level MyDrive contents:')\n"
+    "        for item in sorted(os.listdir('/content/drive/MyDrive')):\n"
+    "            print(f'  {item}')\n"
+    "        return\n"
+    "    classes = sorted([\n"
+    "        d for d in os.listdir(data_dir)\n"
+    "        if os.path.isdir(os.path.join(data_dir, d))\n"
+    "    ])\n"
+    "    print(f'Dataset found at: {data_dir}')\n"
+    "    print(f'Classes ({len(classes)}): {classes}')\n"
+    "    for cls in classes:\n"
+    "        count = len(os.listdir(os.path.join(data_dir, cls)))\n"
+    "        print(f'  {cls:<25} {count:>5,} images')\n\n"
+    "check_flat_dataset('/content/drive/MyDrive/udms-project/data/processed/all')\n"
+).splitlines(keepends=True)
+
+# ── Cell 9: config — 5 classes, flat DATA_DIR, TEMP_SPLIT ────────────────────
+cells[9]['source'] = (
+    "import os, json, time, shutil\n"
+    "from pathlib import Path\n\n"
+    "import numpy as np\n"
+    "import matplotlib.pyplot as plt\n"
+    "import tensorflow as tf\n"
+    "from sklearn.metrics import accuracy_score, classification_report, confusion_matrix\n\n"
+    "# Dataset location (flat — one subfolder per class, no train/val/test)\n"
+    "DATA_DIR = '/content/drive/MyDrive/udms-project/data/processed/all'\n\n"
+    "# Where to save model artifacts\n"
+    "MODELS_DIR = '/content/drive/MyDrive/udms-project/models'\n\n"
+    "PHASE1_CKPT   = f'{MODELS_DIR}/phase1_best.keras'\n"
+    "PHASE2_CKPT   = f'{MODELS_DIR}/phase2_best.keras'\n"
+    "TFLITE_OUT    = f'{MODELS_DIR}/classifier.tflite'\n"
+    "LABEL_MAP_OUT = f'{MODELS_DIR}/label_map.json'\n\n"
+    "IMG_SIZE        = (224, 224)\n"
+    "INPUT_SHAPE     = (224, 224, 3)\n"
+    "BATCH_SIZE      = 32\n"
+    "NUM_CLASSES     = 5\n"
+    "TEMP_SPLIT      = 0.30   # val + test = 30%;  train = 70%\n"
+    "SEED            = 42\n"
+    "PHASE1_LR       = 1e-3\n"
+    "PHASE1_EPOCHS   = 20\n"
+    "PHASE2_LR       = 1e-5\n"
+    "PHASE2_EPOCHS   = 15\n"
+    "UNFREEZE_LAYERS = 30\n"
+    "EARLY_STOP_PAT  = 5\n\n"
+    "UDMS_CATEGORIES = [\n"
+    "    'bad_drainage',\n"
+    "    'damaged_signage',\n"
+    "    'illegal_dumping',\n"
+    "    'potholes',\n"
+    "    'vegetation_overgrowth',\n"
+    "]\n\n"
+    "CATEGORY_LABELS = {\n"
+    "    'bad_drainage':          'Bad Drainage / Water Sewage Issues',\n"
+    "    'damaged_signage':       'Damaged Signage / Infrastructure',\n"
+    "    'illegal_dumping':       'Illegal Dumping / Garbage',\n"
+    "    'potholes':              'Pothole / Road Damage',\n"
+    "    'vegetation_overgrowth': 'Vegetation Overgrowth',\n"
+    "}\n\n"
+    "os.makedirs(MODELS_DIR, exist_ok=True)\n"
+    "if not os.path.isdir(DATA_DIR):\n"
+    "    raise FileNotFoundError(\n"
+    "        f'Dataset not found: {DATA_DIR}\\n'\n"
+    "        'Upload data/processed/all/ to MyDrive/udms-project/data/processed/'\n"
+    "    )\n\n"
+    "classes_found = sorted([\n"
+    "    d for d in os.listdir(DATA_DIR)\n"
+    "    if os.path.isdir(os.path.join(DATA_DIR, d))\n"
+    "])\n"
+    "print(f'Data dir    : {DATA_DIR}')\n"
+    "print(f'Models dir  : {MODELS_DIR}')\n"
+    "print(f'Classes ({len(classes_found)}): {classes_found}')\n"
+    "for cls in classes_found:\n"
+    "    count = len(os.listdir(os.path.join(DATA_DIR, cls)))\n"
+    "    print(f'  {cls:<25} {count:>5,} images')\n"
+    "print('Configuration loaded.')\n"
+).splitlines(keepends=True)
+
+# ── Cell 13: class distribution from flat dir ─────────────────────────────────
+cells[13]['source'] = (
+    "# Per-class sample counts from flat DATA_DIR\n"
+    "CLASS_NAMES = sorted([\n"
+    "    d for d in os.listdir(DATA_DIR)\n"
+    "    if os.path.isdir(os.path.join(DATA_DIR, d))\n"
+    "])\n\n"
+    "class_counts = np.array([\n"
+    "    len(os.listdir(os.path.join(DATA_DIR, cls)))\n"
+    "    for cls in CLASS_NAMES\n"
+    "])\n\n"
+    "fig, ax = plt.subplots(figsize=(10, 4))\n"
+    "colors = plt.cm.tab10(np.linspace(0, 0.9, NUM_CLASSES))\n"
+    "bars = ax.barh(CLASS_NAMES, class_counts, color=colors)\n"
+    "ax.bar_label(bars, padding=4, fontsize=9)\n"
+    "ax.set_xlabel('Total images')\n"
+    "ax.set_title('Dataset class distribution (all images before split)')\n"
+    "ax.set_xlim(0, class_counts.max() * 1.15)\n"
+    "plt.tight_layout()\n"
+    "plt.show()\n\n"
+    "for cls, cnt in zip(CLASS_NAMES, class_counts):\n"
+    "    print(f'  {cls:<25} {cnt:>5,}')\n"
+    "print(f'  {\"TOTAL\":<25} {class_counts.sum():>5,}')\n"
+).splitlines(keepends=True)
+
+# ── Cell 14: class weights from flat dir ──────────────────────────────────────
+cells[14]['source'] = (
+    "# Class weights to counteract imbalance\n"
+    "_counts  = np.array([\n"
+    "    len(os.listdir(os.path.join(DATA_DIR, cls)))\n"
+    "    for cls in CLASS_NAMES\n"
+    "])\n"
+    "_total   = _counts.sum()\n"
+    "_weights = _total / (NUM_CLASSES * _counts)\n\n"
+    "class_weights = {i: float(w) for i, w in enumerate(_weights)}\n\n"
+    "print('Class weights (balanced):')\n"
+    "print(f'  {\"Index\":<6} {\"Folder\":<25} {\"Images\":>8}  {\"Weight\":>8}')\n"
+    "print('  ' + '-' * 55)\n"
+    "for i, (cls, cnt, w) in enumerate(zip(CLASS_NAMES, _counts, _weights)):\n"
+    "    bar = chr(9608) * min(int(w * 2), 30)\n"
+    "    print(f'  [{i}]   {cls:<25} {cnt:>8,}  {w:>8.3f}  {bar}')\n"
+    "print(f'\\n  Total images  : {_total:,}')\n"
+    "print(f'  Max weight    : {_weights.max():.3f}  ({CLASS_NAMES[int(_weights.argmax())]})')\n"
+    "print(f'  Min weight    : {_weights.min():.3f}  ({CLASS_NAMES[int(_weights.argmin())]})')\n"
+).splitlines(keepends=True)
+
+with open('notebooks/colab_train.ipynb', 'w', encoding='utf-8') as f:
+    json.dump(nb, f, indent=1, ensure_ascii=False)
+
+print('Done — cells 1, 5, 9, 13, 14 updated for flat 5-class structure.')
