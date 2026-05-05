@@ -16,6 +16,27 @@ include = ["src*", "app*"]
 testpaths = ["tests"]
 pythonpath = ["."]
 
+[tool.coverage.run]
+omit = [
+    # Data pipeline scripts — require real datasets / internet access
+    "src/data/clean_dataset.py",
+    "src/data/download_datasets.py",
+    "src/data/generate_report.py",
+    "src/data/scraper.py",
+    "src/data/smart_scraper.py",
+    "src/data/split_dataset.py",
+    # Training scripts — require TensorFlow/Keras build environment
+    "src/training/callbacks.py",
+    "src/training/evaluate.py",
+    "src/training/export.py",
+    "src/training/model.py",
+    "src/training/train.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"

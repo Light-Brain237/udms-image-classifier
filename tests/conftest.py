@@ -14,26 +14,16 @@ from PIL import Image
 
 
 @pytest.fixture
-def mock_tflite_model(tmp_path):
-    """Create a minimal valid TFLite model for testing.
+def mock_tflite_model():
+    """Return path to the real TFLite model for testing.
 
-    This model outputs random 5-class probabilities.
-    It validates that the classifier wrapper works correctly
-    WITHOUT needing a trained model.
+    Uses the trained model artifact so tests don't require a live
+    Keras/TensorFlow build environment.
     """
-    import tensorflow as tf
+    import os
 
-    inputs = tf.keras.Input(shape=(224, 224, 3))
-    x = tf.keras.layers.GlobalAveragePooling2D()(inputs)
-    outputs = tf.keras.layers.Dense(5, activation="softmax")(x)
-    model = tf.keras.Model(inputs, outputs)
-
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    tflite_bytes = converter.convert()
-
-    model_path = tmp_path / "test_model.tflite"
-    model_path.write_bytes(tflite_bytes)
-    return str(model_path)
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(root, "models", "classifier.tflite")
 
 
 @pytest.fixture

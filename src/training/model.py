@@ -30,7 +30,7 @@ DROPOUT_2 = 0.2
 
 def build_model(
     num_classes: int = NUM_CLASSES, freeze_backbone: bool = True
-) -> tf.keras.Model:
+) -> "tf.keras.Model":
     """Build MobileNetV2 transfer learning model.
 
     Args:
@@ -64,8 +64,8 @@ def build_model(
 
 
 def unfreeze_top_layers(
-    model: tf.keras.Model, num_layers: int = 30
-) -> tf.keras.Model:
+    model: "tf.keras.Model", num_layers: int = 30
+) -> "tf.keras.Model":
     """Unfreeze the last ``num_layers`` layers of the backbone for fine-tuning.
 
     Steps:
@@ -81,7 +81,7 @@ def unfreeze_top_layers(
     return model
 
 
-def get_model_summary(model: tf.keras.Model) -> str:
+def get_model_summary(model: "tf.keras.Model") -> str:
     """Return model summary as string."""
     lines: list[str] = []
     model.summary(print_fn=lambda line: lines.append(line))
