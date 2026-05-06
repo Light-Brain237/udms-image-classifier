@@ -74,18 +74,22 @@ def load_label_map() -> dict:
 # ---------------------------------------------------------------------------
 
 def preprocess_image(pil_image: Image.Image) -> np.ndarray:
-    """Resize and normalise a PIL image for model inference.
+    """Resize a PIL image and return raw float32 pixels in [0, 255].
+
+    The MobileNetV2 Lambda layer baked into the TFLite model handles the
+    [-1, 1] scaling internally — do NOT normalise here or predictions will
+    be wrong.
 
     Steps:
       1. Convert to RGB (handles grayscale and RGBA uploads).
       2. Resize to IMAGE_SIZE × IMAGE_SIZE using LANCZOS resampling.
-      3. Cast to float32 and normalise pixel values to [0, 1].
+      3. Cast to float32 — values stay in [0, 255].
       4. Add batch dimension → shape (1, 224, 224, 3).
     """
     img = pil_image.convert("RGB")
     img = img.resize((IMAGE_SIZE, IMAGE_SIZE), Image.LANCZOS)
-    arr = np.array(img, dtype=np.float32) / 255.0   # normalise to [0, 1]
-    return np.expand_dims(arr, axis=0)               # add batch dim
+    arr = np.array(img, dtype=np.float32)   # raw [0, 255] — model scales internally
+    return np.expand_dims(arr, axis=0)      # add batch dim
 
 
 # ---------------------------------------------------------------------------
